@@ -1,10 +1,10 @@
-import json
-import os
-from datetime import datetime
+import json   # For saving/loading data persistently
+import os     # For file existence checks
+from datetime import datetime  # To validate date inputs
 
-DATA_FILE = "budget_data.json"
+DATA_FILE = "budget_data.json"  # File to store budget data
 
-# Load existing data from file or create a new file
+# Load data from JSON file or create a new one if not exists
 def load_data():
     if not os.path.exists(DATA_FILE):
         with open(DATA_FILE, 'w') as f:
@@ -12,22 +12,22 @@ def load_data():
     with open(DATA_FILE, 'r') as f:
         return json.load(f)
 
-# Save updated data back to file
+# Save current data back into JSON file
 def save_data(data):
     with open(DATA_FILE, 'w') as f:
         json.dump(data, f, indent=4)
 
-# Validate date input (YYYY-MM) and return formatted string
+# Validate user date input in format YYYY-MM
 def get_valid_month():
     while True:
         user_input = input("Enter month (YYYY-MM): ").strip()
         try:
-            datetime.strptime(user_input, "%Y-%m")
+            datetime.strptime(user_input, "%Y-%m")  # Validate format
             return user_input
         except ValueError:
             print("Invalid date format. Please use YYYY-MM.")
 
-# Add income or expense to a specific category
+# Add income or expense entry into the budget data
 def add_entry(data, month, entry_type):
     category = input(f"Enter {entry_type} category: ").strip()
     try:
@@ -39,16 +39,16 @@ def add_entry(data, month, entry_type):
         print("Invalid amount.")
         return
 
-    # Initialize month and entry type if not exists
+    # Initialize structures if month or entry type is new
     if month not in data:
         data[month] = {"income": {}, "expenses": {}, "limits": {}}
     if category not in data[month][entry_type]:
         data[month][entry_type][category] = 0
 
-    data[month][entry_type][category] += amount
+    data[month][entry_type][category] += amount  # Add amount to category
     print(f"{entry_type.capitalize()} added: {category} - ${amount:.2f}")
 
-# Set budget limits for expense categories
+# Set budget limit for specific expense categories
 def set_budget_limit(data, month):
     category = input("Enter expense category to set limit: ").strip()
     try:
@@ -63,10 +63,10 @@ def set_budget_limit(data, month):
     if month not in data:
         data[month] = {"income": {}, "expenses": {}, "limits": {}}
 
-    data[month]["limits"][category] = limit
+    data[month]["limits"][category] = limit  # Store limit in the data structure
     print(f"Budget limit set: {category} - ${limit:.2f}")
 
-# Analyze and display financial summary for a month
+# Display detailed monthly financial summary
 def show_summary(data, month):
     if month not in data:
         print("No data found for this month.")
@@ -76,22 +76,19 @@ def show_summary(data, month):
     income_total = sum(month_data.get("income", {}).values())
     expense_total = sum(month_data.get("expenses", {}).values())
     net_savings = income_total - expense_total
+    savings_percent = (net_savings / income_total * 100) if income_total else 0
 
-    # Print financial summary
     print("\n💰 FINANCIAL SUMMARY")
     print(f"Total Income: ${income_total:.2f}")
     print(f"Total Expenses: ${expense_total:.2f}")
-    savings_percent = (net_savings / income_total * 100) if income_total else 0
     print(f"Net Savings: ${net_savings:.2f} ({savings_percent:.1f}%)")
 
-    # Visual Expense Breakdown (Text-based bar charts)
     print("\n📊 EXPENSE BREAKDOWN")
     for category, amount in month_data.get("expenses", {}).items():
         percent = (amount / expense_total * 100) if expense_total else 0
-        bars = '█' * int(percent // 5) + '░' * (20 - int(percent // 5))
+        bars = '█' * int(percent // 5) + '░' * (20 - int(percent // 5))  # Text-based bar visualization
         print(f"{category:<12} {bars} ${amount:.0f} ({percent:.1f}%)")
 
-    # Budget Variance Warnings
     print("\n⚠️ BUDGET ALERTS:")
     alerts = False
     for category, limit in month_data.get("limits", {}).items():
@@ -104,13 +101,13 @@ def show_summary(data, month):
     if not alerts:
         print("No budget overruns.")
 
-# Analyze spending trend between two months
+# Compare two months to see spending trends in categories
 def analyze_trends(data):
     month1 = get_valid_month()
     month2 = get_valid_month()
 
     if month1 not in data or month2 not in data:
-        print("One or both months not found in data.")
+        print("One or both months not found.")
         return
 
     print(f"\n📈 SPENDING TREND: {month1} ➔ {month2}")
@@ -123,7 +120,7 @@ def analyze_trends(data):
         diff = abs(spent2 - spent1)
         print(f"{category}: {trend} by ${diff:.2f}")
 
-# Export monthly summary to a text file
+# Export monthly summary into a text file
 def export_summary(data, month):
     if month not in data:
         print("No data found for this month.")
@@ -155,7 +152,7 @@ def export_summary(data, month):
                 f.write(f"{category}: ${over_budget:.0f} over budget ({percent_spent:.1f}% of limit)\n")
     print(f"Summary exported to {filename}")
 
-# Main interactive menu loop
+# Main menu loop to navigate through budget functionalities
 def main():
     data = load_data()
     while True:
@@ -170,7 +167,7 @@ def main():
 
         choice = input("Select an option: ").strip()
 
-        if choice in ["1", "2", "3", "4", "5", "6"]:
+        if choice in ["1", "2", "3", "4", "6"]:
             month = get_valid_month()
 
         if choice == "1":

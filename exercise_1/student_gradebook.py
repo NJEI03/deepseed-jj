@@ -1,39 +1,85 @@
-# Student Gradebook Manager
-# This program helps you manage students and their grades in a simple way.
-# All comments are written in plain, human-like English for easy understanding.
-
+# Function to determine the letter grade based on average score
 def get_letter_grade(avg):
-    # This function takes a number (average) and returns a letter grade.
     if avg >= 90:
-        return 'A'
+        return "A"
     elif avg >= 80:
-        return 'B'
+        return "B"
     elif avg >= 70:
-        return 'C'
+        return "C"
     elif avg >= 60:
-        return 'D'
+        return "D"
     else:
-        return 'F'
+        return "F"
 
-def class_stats(gradebook):
-    # This function shows the class average and the best/worst student.
-    if not gradebook:
-        print("No students in the gradebook yet.")
-        return
-    averages = {name: sum(grades)/len(grades) for name, grades in gradebook.items() if grades}
-    if not averages:
-        print("No grades entered yet.")
-        return
-    class_avg = sum(averages.values()) / len(averages)
-    best = max(averages, key=averages.get)
-    worst = min(averages, key=averages.get)
-    print(f"\nClass Average: {class_avg:.2f}")
-    print(f"Top Student: {best} ({averages[best]:.2f})")
-    print(f"Lowest Student: {worst} ({averages[worst]:.2f})\n")
+# Function to add a new student to the gradebook
+def add_student(gradebook):
+    name = input("Enter student name: ").strip()
+    if name in gradebook:
+        print(f"{name} already exists.")  # Prevent duplicate entries
+    else:
+        gradebook[name] = []  # Initialize with empty grade list
+        print(f"{name} added successfully.")
 
-def main():
-    # This is the main part of the program. It shows the menu and does what you pick.
-    gradebook = {}
+# Function to add a grade to an existing student
+def add_grade(gradebook):
+    name = input("Enter student name: ").strip()
+    if name not in gradebook:
+        print("Student not found.")  # Validate student existence
+        return
+    try:
+        grade = float(input("Enter grade (0-100): "))
+        if 0 <= grade <= 100:
+            gradebook[name].append(grade)  # Add grade to student's list
+            print(f"Grade {grade} added to {name}.")
+        else:
+            print("Grade must be between 0 and 100.")  # Validate range
+    except ValueError:
+        print("Invalid input. Grade must be a number.")  # Handle non-numeric input
+
+# Function to display a student's report (average & letter grade)
+def view_student_report(gradebook):
+    name = input("Enter student name: ").strip()
+    if name not in gradebook:
+        print("Student not found.")
+        return
+    grades = gradebook[name]
+    if not grades:
+        print(f"{name} has no grades yet.")  # Handle empty grade list
+        return
+    avg = sum(grades) / len(grades)  # Compute average
+    letter = get_letter_grade(avg)  # Get corresponding letter grade
+    print(f"{name}'s Average: {avg:.2f} (Grade: {letter})")
+    print(f"Grades: {grades}")
+
+# Function to compute and display overall class statistics
+def class_statistics(gradebook):
+    all_averages = []
+    for grades in gradebook.values():
+        if grades:
+            avg = sum(grades) / len(grades)  # Compute student average
+            all_averages.append((avg, grades))  # Store with their grades
+
+    if not all_averages:
+        print("No grades available to calculate statistics.")
+        return
+
+    class_avg = sum(avg for avg, _ in all_averages) / len(all_averages)  # Class average
+    highest = max(all_averages)  # Student with highest average
+    lowest = min(all_averages)  # Student with lowest average
+
+    # Find the corresponding student names
+    best_student = [name for name, grades in gradebook.items() if grades and sum(grades) / len(grades) == highest[0]][0]
+    worst_student = [name for name, grades in gradebook.items() if grades and sum(grades) / len(grades) == lowest[0]][0]
+
+    # Output statistics
+    print(f"Class Average: {class_avg:.2f}")
+    print(f"Top Student: {best_student} ({highest[0]:.2f})")
+    print(f"Lowest Student: {worst_student} ({lowest[0]:.2f})")
+
+# Main menu loop to interact with the gradebook
+def gradebook_menu():
+    gradebook = {}  # Dictionary to store student names and grades
+
     while True:
         print("\n=== STUDENT GRADEBOOK MANAGER ===")
         print("1. Add Student")
@@ -41,52 +87,24 @@ def main():
         print("3. View Student Report")
         print("4. Class Statistics")
         print("5. Exit")
+
         choice = input("Choice: ").strip()
-        if choice == '1':
-            # Add a new student
-            name = input("Enter student name: ").strip()
-            if name in gradebook:
-                print("Student already exists.")
-            else:
-                gradebook[name] = []
-                print(f"Added {name} to the gradebook.")
-        elif choice == '2':
-            # Add a grade to a student
-            name = input("Enter student name: ").strip()
-            if name not in gradebook:
-                print("Student not found.")
-            else:
-                try:
-                    grade = float(input("Enter grade (0-100): "))
-                    if 0 <= grade <= 100:
-                        gradebook[name].append(grade)
-                        print(f"Added grade {grade} for {name}.")
-                    else:
-                        print("Grade must be between 0 and 100.")
-                except ValueError:
-                    print("Please enter a valid number.")
-        elif choice == '3':
-            # Show a student's average and letter grade
-            name = input("Enter student name: ").strip()
-            if name not in gradebook:
-                print("Student not found.")
-            elif not gradebook[name]:
-                print(f"No grades for {name} yet.")
-            else:
-                grades = gradebook[name]
-                avg = sum(grades) / len(grades)
-                letter = get_letter_grade(avg)
-                print(f"{name}'s Average: {avg:.2f} (Grade: {letter})")
-                print(f"Grades: {grades}")
-        elif choice == '4':
-            # Show class statistics
-            class_stats(gradebook)
-        elif choice == '5':
-            # Exit the program
-            print("Goodbye!")
+
+        # Decision logic for each menu option
+        if choice == "1":
+            add_student(gradebook)
+        elif choice == "2":
+            add_grade(gradebook)
+        elif choice == "3":
+            view_student_report(gradebook)
+        elif choice == "4":
+            class_statistics(gradebook)
+        elif choice == "5":
+            print("Exiting Gradebook Manager.")
             break
         else:
-            print("Please pick a valid option (1-5).")
+            print("Invalid choice. Please try again.")
 
+# Entry point
 if __name__ == "__main__":
-    main()
+    gradebook_menu()

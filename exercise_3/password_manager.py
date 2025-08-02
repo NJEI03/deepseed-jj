@@ -1,22 +1,17 @@
-# password_analyzer.py
-
 import re
 
-# List of 20+ common passwords to check against
-COMMON_PASSWORDS = [
-    "123456", "password", "12345678", "qwerty", "abc123", "football",
-    "123456789", "12345", "letmein", "1234567", "basketball", "monkey",
-    "iloveyou", "admin", "welcome", "login", "dragon", "passw0rd",
-    "master", "hello", "freedom", "whatever"
-]
+# Common passwords to avoid (predefined list)
+COMMON_PASSWORDS = ["123456", "password", "qwerty", "abc123", "letmein", "football", 
+                    "admin", "welcome", "login", "monkey", "dragon", "passw0rd", "master", "hello",
+                    "freedom", "whatever", "12345", "12345678", "123456789", "iloveyou"]
 
-# Function to analyze a password and return score, results and suggestions
+# Analyze password strength based on various criteria
 def analyze_password(password):
     score = 0
     results = []
     suggestions = []
 
-    # Criterion 1: Length at least 8 characters
+    # Length check
     if len(password) >= 8:
         score += 20
         results.append("✅ Length requirement (8+ chars)")
@@ -24,23 +19,23 @@ def analyze_password(password):
         results.append("❌ Length is less than 8 characters")
         suggestions.append("Use at least 8 characters")
 
-    # Criterion 2: Contains uppercase letters
+    # Uppercase letter check using regex
     if re.search(r'[A-Z]', password):
         score += 20
         results.append("✅ Contains uppercase letters")
     else:
         results.append("❌ Missing uppercase letters")
-        suggestions.append("Include at least one uppercase letter")
+        suggestions.append("Include uppercase letters")
 
-    # Criterion 3: Contains lowercase letters
+    # Lowercase letter check
     if re.search(r'[a-z]', password):
         score += 20
         results.append("✅ Contains lowercase letters")
     else:
         results.append("❌ Missing lowercase letters")
-        suggestions.append("Include at least one lowercase letter")
+        suggestions.append("Include lowercase letters")
 
-    # Criterion 4: Contains numbers
+    # Digit check
     if re.search(r'\d', password):
         score += 20
         results.append("✅ Contains numbers")
@@ -48,24 +43,23 @@ def analyze_password(password):
         results.append("❌ Missing numbers")
         suggestions.append("Include at least one number")
 
-    # Criterion 5: Contains special characters (!@#$%^&*)
+    # Special character check
     if re.search(r'[!@#$%^&*]', password):
         score += 20
         results.append("✅ Contains special characters")
     else:
         results.append("❌ Missing special characters")
-        suggestions.append("Add special characters like !@#$%^&*")
+        suggestions.append("Add characters like !@#$%^&*")
 
-    # Criterion 6: Not a common password
+    # Common password check
     if password.lower() not in COMMON_PASSWORDS:
         score += 20
         results.append("✅ Not a common password")
     else:
         results.append("❌ Common password detected")
-        suggestions.append("Avoid common password patterns")
-        suggestions.append("Consider using a passphrase instead")
+        suggestions.append("Avoid using common passwords")
 
-    # Determine strength level based on score
+    # Determine strength level
     if score <= 40:
         strength = "Weak"
     elif score <= 60:
@@ -79,23 +73,20 @@ def analyze_password(password):
 
     return score, strength, results, suggestions
 
+# Main function to interact with user
 def main():
     print("=== PASSWORD SECURITY ANALYZER ===")
     password = input("Enter password to analyze: ")
 
-    # Analyze the password
     score, strength, results, suggestions = analyze_password(password)
 
-    # Display the analysis results
     print("\n🔒 SECURITY ANALYSIS RESULTS")
     print(f"Password: {password}")
     print(f"Score: {score}/120 ({strength})\n")
 
-    # Display passed and failed criteria
     for res in results:
         print(res)
-    
-    # Display suggestions for improvement if needed
+
     if suggestions:
         print("\n💡 SUGGESTIONS:")
         for sug in suggestions:

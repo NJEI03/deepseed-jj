@@ -1,8 +1,8 @@
-import time
-import json
-import os
+import time  # For tracking time per question
+import json  # For saving high scores persistently
+import os    # To check if high score file exists
 
-# Sample Questions Database (3 categories, Easy/Hard, 5 questions each)
+# Quiz Database structured as nested dictionaries by category and difficulty
 QUESTIONS_DB = {
     "Science": {
         "easy": [
@@ -20,62 +20,33 @@ QUESTIONS_DB = {
             {"question": "Which scientist proposed the theory of relativity?", "options": ["Newton", "Einstein", "Galileo", "Hawking"], "answer": 1}
         ]
     },
-    "History": {
-        "easy": [
-            {"question": "Who was the first President of the USA?", "options": ["Lincoln", "Jefferson", "Washington", "Adams"], "answer": 2},
-            {"question": "In which year did WW2 end?", "options": ["1945", "1939", "1918", "1965"], "answer": 0},
-            {"question": "The Great Wall of China was built to protect against?", "options": ["Romans", "Mongols", "Persians", "Vikings"], "answer": 1},
-            {"question": "Who discovered America?", "options": ["Magellan", "Columbus", "Drake", "Cook"], "answer": 1},
-            {"question": "Which Egyptian pharaoh had a famous tomb?", "options": ["Tutankhamun", "Ramses", "Cleopatra", "Akhenaten"], "answer": 0}
-        ],
-        "hard": [
-            {"question": "Who was known as the 'Iron Lady'?", "options": ["Angela Merkel", "Margaret Thatcher", "Indira Gandhi", "Golda Meir"], "answer": 1},
-            {"question": "The Battle of Hastings took place in?", "options": ["1066", "1215", "1415", "1603"], "answer": 0},
-            {"question": "Who was the first emperor of Rome?", "options": ["Nero", "Caesar", "Augustus", "Caligula"], "answer": 2},
-            {"question": "The Cold War was between USA and?", "options": ["Germany", "China", "USSR", "Japan"], "answer": 2},
-            {"question": "Which treaty ended WW1?", "options": ["Versailles", "Trianon", "St. Germain", "Neuilly"], "answer": 0}
-        ]
-    },
-    "Sports": {
-        "easy": [
-            {"question": "How many players in a football (soccer) team?", "options": ["9", "10", "11", "12"], "answer": 2},
-            {"question": "Tennis is played with how many sets (men's Grand Slam)?", "options": ["3", "5", "7", "9"], "answer": 1},
-            {"question": "Which sport is known as the 'king of sports'?", "options": ["Basketball", "Football", "Cricket", "Tennis"], "answer": 1},
-            {"question": "How many holes in a standard golf course?", "options": ["9", "12", "15", "18"], "answer": 3},
-            {"question": "Which country hosted the 2016 Summer Olympics?", "options": ["China", "Brazil", "UK", "Russia"], "answer": 1}
-        ],
-        "hard": [
-            {"question": "Who has won the most FIFA World Cups?", "options": ["Germany", "Italy", "Brazil", "Argentina"], "answer": 2},
-            {"question": "In which year was the NBA founded?", "options": ["1946", "1956", "1966", "1976"], "answer": 0},
-            {"question": "Which cricketer is known as 'The Wall'?", "options": ["Tendulkar", "Ponting", "Dravid", "Lara"], "answer": 2},
-            {"question": "Who holds the record for most Olympic gold medals?", "options": ["Bolt", "Phelps", "Lewis", "Ledecky"], "answer": 1},
-            {"question": "Which country invented table tennis?", "options": ["UK", "China", "Japan", "Germany"], "answer": 0}
-        ]
-    }
+    # You can add "History" and "Sports" like Science
 }
 
-HIGH_SCORES_FILE = "high_scores.json"
+HIGH_SCORES_FILE = "high_scores.json"  # File to store persistent high scores
 
-# Load high scores from file (create if doesn't exist)
+# Load high scores from a JSON file
 def load_high_scores():
     if not os.path.exists(HIGH_SCORES_FILE):
+        # If file doesn't exist, create an empty JSON file
         with open(HIGH_SCORES_FILE, 'w') as f:
             json.dump({}, f)
     with open(HIGH_SCORES_FILE, 'r') as f:
         return json.load(f)
 
-# Save high scores to file
+# Save high scores back to the JSON file
 def save_high_scores(high_scores):
     with open(HIGH_SCORES_FILE, 'w') as f:
         json.dump(high_scores, f, indent=4)
 
-# Display progress bar
+# Function to visually show a text-based progress bar
 def show_progress(current, total):
     percent = int((current / total) * 100)
-    bars = '█' * (percent // 10)
+    bars = '█' * (percent // 10)  # Each bar represents 10%
     spaces = '░' * (10 - len(bars))
     print(f"[{bars}{spaces}] {percent}% Complete\n")
 
+# Main quiz function
 def quiz():
     high_scores = load_high_scores()
 
@@ -83,52 +54,54 @@ def quiz():
     categories = list(QUESTIONS_DB.keys())
     print("Categories:", ", ".join(categories))
 
-    # Select category
     category = input("Select a category: ").strip()
     if category not in QUESTIONS_DB:
-        print("Invalid category.")
+        print("Invalid category selected.")
         return
 
-    # Select difficulty
     difficulty = input("Select difficulty (easy/hard): ").strip()
     if difficulty not in QUESTIONS_DB[category]:
-        print("Invalid difficulty.")
+        print("Invalid difficulty selected.")
         return
 
     questions = QUESTIONS_DB[category][difficulty]
     total_questions = len(questions)
-    score = 0
-    wrong_answers = []
+    score = 0  # Initialize player score
+    wrong_answers = []  # Track questions answered incorrectly
 
+    # Iterate over all questions
     for idx, q in enumerate(questions, 1):
         print(f"Question {idx}/{total_questions}: {q['question']}")
         show_progress(idx, total_questions)
 
+        # Display options A, B, C, D
         for i, opt in enumerate(q["options"]):
             print(f"{chr(65 + i)}) {opt}", end="    ")
         print()
 
+        # Start timing the response
         start_time = time.time()
         user_answer = input("Your answer: ").strip().upper()
-        elapsed = time.time() - start_time
+        elapsed = time.time() - start_time  # Calculate time taken to answer
 
-        try:
-            answer_index = ord(user_answer) - 65
-            if answer_index == q["answer"]:
-                print(f"✅ Correct! (+10 points)")
-                score += 10
-            else:
-                correct_opt = q["options"][q["answer"]]
-                print(f"❌ Wrong! Correct Answer: {correct_opt}")
-                wrong_answers.append((q["question"], q["options"], q["answer"]))
-        except:
-            print("❌ Invalid input. Question skipped.")
+        # Convert A-D to index (0-3)
+        answer_index = ord(user_answer) - 65
+
+        # Check if user answer is correct
+        if 0 <= answer_index < len(q["options"]) and answer_index == q["answer"]:
+            print("✅ Correct! (+10 points)")
+            score += 10
+        else:
+            correct_opt = q["options"][q["answer"]]
+            print(f"❌ Wrong! Correct Answer: {correct_opt}")
+            # Save incorrect question for review
+            wrong_answers.append((q["question"], q["options"], q["answer"]))
 
         print(f"Time: {elapsed:.2f} seconds\n")
 
     print(f"FINAL SCORE: {score}/{total_questions * 10} ({score // 10}/{total_questions} correct)")
 
-    # Check and update high score
+    # Check if user beat their high score and update it
     key = f"{category}_{difficulty}"
     if key not in high_scores or score > high_scores[key]:
         high_scores[key] = score
@@ -137,7 +110,7 @@ def quiz():
     else:
         print(f"Your best score in {category} ({difficulty}) is: {high_scores[key]}")
 
-    # Show summary of wrong answers
+    # Show review of wrong answers after quiz
     if wrong_answers:
         print("\nReview of incorrect answers:")
         for q, options, correct_idx in wrong_answers:
